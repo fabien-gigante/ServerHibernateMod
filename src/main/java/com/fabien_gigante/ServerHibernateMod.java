@@ -80,9 +80,11 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		LOGGER.info("Running shell command : {}", command);
 		try {
 			String[] execCommand = windowsOS ? new String[] {"cmd", "/c", command} : new String[] {"/bin/sh", "-c", command};
-			Process process = Runtime.getRuntime().exec(execCommand);  
+			ProcessBuilder builder = new ProcessBuilder(execCommand);
+			builder.redirectErrorStream(true);
+			Process process = builder.start();
 			if (process.waitFor(30, TimeUnit.SECONDS)) rc = process.exitValue();
-			BufferedReader buf = new BufferedReader(new InputStreamReader(new SequenceInputStream(process.getInputStream(), process.getErrorStream())));
+			BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
 			for(String line; (line = buf.readLine()) != null;)
 				context.getSource().sendMessage(Text.literal(line));
 		}
