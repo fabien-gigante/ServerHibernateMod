@@ -3,6 +3,7 @@ package com.fabien_gigante;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.SequenceInputStream;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -80,7 +81,7 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		try {
 			String[] execCommand = windowsOS ? new String[] {"cmd", "/c", command} : new String[] {"/bin/sh", "-c", command};
 			Process process = Runtime.getRuntime().exec(execCommand);  
-			rc = process.waitFor();
+			if (process.waitFor(30, TimeUnit.SECONDS)) rc = process.exitValue();
 			BufferedReader buf = new BufferedReader(new InputStreamReader(new SequenceInputStream(process.getInputStream(), process.getErrorStream())));
 			for(String line; (line = buf.readLine()) != null;)
 				context.getSource().sendMessage(Text.literal(line));
