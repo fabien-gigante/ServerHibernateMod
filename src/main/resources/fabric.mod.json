@@ -21,9 +21,9 @@
 		"ServerHibernateMod.mixins.json"
 	],
 	"depends": {
-		"minecraft": "~1.21",
+		"minecraft": "~1.21.4",
 		"java": ">=21",
-		"fabricloader": ">=0.15",
+		"fabricloader": ">=0.16",
 		"fabric-api": "*"
 	},
 	"suggests": {
