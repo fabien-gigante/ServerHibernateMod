@@ -10,5 +10,5 @@ import net.minecraft.text.Text;
 @Mixin(RconCommandOutput.class)
 public class RconCommandOutputMixin {
 	@Redirect(method = "sendMessage", at = @At(value = "INVOKE", target = "Lnet/minecraft/text/Text;getString()Ljava/lang/String;"))
-	public String getString(Text message) { return message.getString() + "\n"; }
+	public String getString(Text message) { return message.getString() + "\n"; } // Fix bug MC-7569
 }
