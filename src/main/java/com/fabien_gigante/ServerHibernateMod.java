@@ -2,7 +2,6 @@ package com.fabien_gigante;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.SequenceInputStream;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -39,7 +38,10 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(CommandManager.literal("shell")
 				.then(CommandManager.argument("command", StringArgumentType.greedyString())
-					.executes(this::runCommand)));
+					.executes(this::onCommandShell)));
+		});
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(CommandManager.literal("meta").executes(this::onCommandMeta));
 		});
 
 	}
@@ -74,7 +76,8 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		}
 	}
 
-	private int runCommand(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+	private int onCommandShell(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+		var source = context.getSource();
 		String command = StringArgumentType.getString(context, "command");
 		int rc = -1;
 		LOGGER.info("Running shell command : {}", command);
@@ -85,14 +88,21 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 			Process process = builder.start();
 			if (process.waitFor(30, TimeUnit.SECONDS)) rc = process.exitValue();
 			BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			for(String line; (line = buf.readLine()) != null;)
-				context.getSource().sendMessage(Text.literal(line));
+			for(String line; (line = buf.readLine()) != null;) source.sendMessage(Text.literal(line));
 		}
 		catch(Exception e) {
 			e.printStackTrace();
 			throw new RuntimeException(e);
 		}
 		return rc == 0 ? 1 : 0; // Return 1 if the command executed successfully
+	}
+
+	private int onCommandMeta(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+		var source = context.getSource(); 
+		MinecraftServer server = source.getServer();
+		Text meta = Text.empty().append(server.getServerMotd()).append(" ("+server.getVersion()+")");
+		source.sendMessage(meta);
+		return 1;
 	}
 
 }
