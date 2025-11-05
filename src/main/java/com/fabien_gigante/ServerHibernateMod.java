@@ -16,11 +16,11 @@ import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PacketSender;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayNetworkHandler;
-import net.minecraft.text.Text;
+import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
 public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted  {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
@@ -36,31 +36,31 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		ServerPlayConnectionEvents.DISCONNECT.register(this);	
 		ServerLifecycleEvents.SERVER_STARTED.register(this);
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(CommandManager.literal("shell")
-				.then(CommandManager.argument("command", StringArgumentType.greedyString())
+			dispatcher.register(Commands.literal("shell")
+				.then(Commands.argument("command", StringArgumentType.greedyString())
 					.executes(this::onCommandShell)));
 		});
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
-			dispatcher.register(CommandManager.literal("meta").executes(this::onCommandMeta));
+			dispatcher.register(Commands.literal("meta").executes(this::onCommandMeta));
 		});
 
 	}
 
 	@Override
 	public void onServerStarted(MinecraftServer server) {
-		if (server.getCurrentPlayerCount()==0) {
-			var tickManager = server.getTickManager();
+		if (server.getPlayerCount()==0) {
+			var tickManager = server.tickRateManager();
 			tickManager.setFrozen(true);
 			LOGGER.info("No player connected yet. Server is now frozen.");
 		}
 	}
 
 	@Override
-	public void onPlayDisconnect(ServerPlayNetworkHandler handler, MinecraftServer server) {
-		if (server.getCurrentPlayerCount()==1) {
-			var tickManager = server.getTickManager();
+	public void onPlayDisconnect(ServerGamePacketListenerImpl handler, MinecraftServer server) {
+		if (server.getPlayerCount()==1) {
+			var tickManager = server.tickRateManager();
 			if (tickManager.isSprinting()) tickManager.stopSprinting();
-			if (tickManager.isStepping()) tickManager.stopStepping();
+			if (tickManager.isSteppingForward()) tickManager.stopStepping();
 			tickManager.setFrozen(true);
 			LOGGER.info("Last player disconnected. Server is now frozen.");
 			System.gc(); // Might be a good opportunity to free some memory too
@@ -68,15 +68,15 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 	}
 
 	@Override
-	public void onPlayReady(ServerPlayNetworkHandler handler, PacketSender sender, MinecraftServer server) {
-		if (server.getCurrentPlayerCount()==0) {
-			var tickManager = server.getTickManager();
+	public void onPlayReady(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
+		if (server.getPlayerCount()==0) {
+			var tickManager = server.tickRateManager();
 			if (tickManager.isFrozen()) tickManager.setFrozen(false);
 			LOGGER.info("First player joined. Server is now unfrozen.");
 		}
 	}
 
-	private int onCommandShell(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+	private int onCommandShell(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		var source = context.getSource();
 		String command = StringArgumentType.getString(context, "command");
 		int rc = -1;
@@ -88,7 +88,7 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 			Process process = builder.start();
 			if (process.waitFor(30, TimeUnit.SECONDS)) rc = process.exitValue();
 			BufferedReader buf = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			for(String line; (line = buf.readLine()) != null;) source.sendMessage(Text.literal(line));
+			for(String line; (line = buf.readLine()) != null;) source.sendSystemMessage(Component.literal(line));
 		}
 		catch(Exception e) {
 			e.printStackTrace();
@@ -97,11 +97,11 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		return rc == 0 ? 1 : 0; // Return 1 if the command executed successfully
 	}
 
-	private int onCommandMeta(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+	private int onCommandMeta(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		var source = context.getSource(); 
 		MinecraftServer server = source.getServer();
-		Text meta = Text.empty().append(server.getServerMotd()).append(" ("+server.getVersion()+")");
-		source.sendMessage(meta);
+		Component meta = Component.empty().append(server.getMotd()).append(" ("+server.getServerVersion()+")");
+		source.sendSystemMessage(meta);
 		return 1;
 	}
 
