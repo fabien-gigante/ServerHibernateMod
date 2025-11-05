@@ -4,7 +4,7 @@ Welcome to the *Server Hibernate* Minecraft mod.
 
 - Automatically freezes the server (as `/tick freeze` does) when no player is connected
 - Adds new-line at the end of RCON messages (to ease remote administration)
-- Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCOM clients
+- Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 > [!WARNING]
 > Use at your own risk
 
