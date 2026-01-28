@@ -21,10 +21,13 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
+import net.minecraft.world.TickRateManager;
 
 public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted  {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
 	private boolean windowsOS;
+	private boolean hibernating = false;
+	private float defaultTickrate = 20.0f;
 
 	// Server-side mod entry point
 	@Override
@@ -50,8 +53,9 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 	public void onServerStarted(MinecraftServer server) {
 		if (server.getPlayerCount()==0) {
 			var tickManager = server.tickRateManager();
-			tickManager.setFrozen(true);
-			LOGGER.info("No player connected yet. Server is now frozen.");
+			defaultTickrate = tickManager.tickrate(); hibernating = true;
+			tickManager.setTickRate(TickRateManager.MIN_TICKRATE);
+			LOGGER.info("No player connected yet. Server is now running at minimum tickrate.");
 		}
 	}
 
@@ -61,9 +65,9 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 			var tickManager = server.tickRateManager();
 			if (tickManager.isSprinting()) tickManager.stopSprinting();
 			if (tickManager.isSteppingForward()) tickManager.stopStepping();
-			tickManager.setFrozen(true);
-			LOGGER.info("Last player disconnected. Server is now frozen.");
-			System.gc(); // Might be a good opportunity to free some memory too
+			defaultTickrate = tickManager.tickrate(); hibernating = true;
+			tickManager.setTickRate(TickRateManager.MIN_TICKRATE);
+			LOGGER.info("Last player disconnected. Server is now running at minimum tickrate.");
 		}
 	}
 
@@ -71,8 +75,11 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 	public void onPlayReady(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
 		if (server.getPlayerCount()==0) {
 			var tickManager = server.tickRateManager();
-			if (tickManager.isFrozen()) tickManager.setFrozen(false);
-			LOGGER.info("First player joined. Server is now unfrozen.");
+			if (hibernating) { 
+				hibernating = false; 
+				tickManager.setTickRate(defaultTickrate);
+			}
+			LOGGER.info("First player joined. Server is now running at default tickrate.");
 		}
 	}
 

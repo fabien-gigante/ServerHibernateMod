@@ -3,7 +3,7 @@
 	"id": "server-hibernate",
 	"version": "${version}",
 	"name": "ServerHibernateMod",
-	"description": "Automatically freezes the server when no player is connected (and few other goodies)",
+	"description": "Automatically slows down the server when no player is connected (and few other goodies)",
 	"authors": ["Fabien Gigante"],
 	"contact": {
 		"homepage": "https://github.com/fabien-gigante/ServerHibernateMod",
