@@ -2,7 +2,7 @@
 # Server Hibernate
 Welcome to the *Server Hibernate* Minecraft mod.
 
-- Automatically slows down the server to minimal tick speed (as `/tps 1` does) when no player is connected
+- Automatically slows down the server to minimal tick rate (as `/tick rate 1` does) when no player is connected
 - Adds new-line at the end of RCON messages (to ease remote administration)
 - Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 > [!WARNING]
