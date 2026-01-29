@@ -23,10 +23,10 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
 import net.minecraft.world.TickRateManager;
 
-public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted, ServerLifecycleEvents.ServerStopped {
+public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
 	private boolean windowsOS;
-	private float defaultTickrate = 20.0f;
+	private static final float DEFAULT_TICKRATE = 20.0f;
 
 	// Server-side mod entry point
 	@Override
@@ -37,7 +37,6 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		ServerPlayConnectionEvents.JOIN.register(this);
 		ServerPlayConnectionEvents.DISCONNECT.register(this);	
 		ServerLifecycleEvents.SERVER_STARTED.register(this);
-		ServerLifecycleEvents.SERVER_STOPPED.register(this);
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("shell")
 				.then(Commands.argument("command", StringArgumentType.greedyString())
@@ -47,37 +46,26 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 			dispatcher.register(Commands.literal("meta").executes(this::onCommandMeta));
 		});
 	}
+	
 	public void hibernate(MinecraftServer server, boolean hibernate) {
 		var tickManager = server.tickRateManager();
 		boolean hibernating = tickManager.tickrate() == TickRateManager.MIN_TICKRATE;
-		if (hibernate && !hibernating) {
-			defaultTickrate = tickManager.tickrate();
-			tickManager.setTickRate(TickRateManager.MIN_TICKRATE);
-			LOGGER.info("Server is now running at minimum tickrate.");
-		}
-		else if (!hibernate && hibernating) {
-			tickManager.setTickRate(defaultTickrate);
-			LOGGER.info("Server is now running at default tickrate.");
-		}
+		if (hibernate == hibernating) return;
+		tickManager.setTickRate(hibernate ? TickRateManager.MIN_TICKRATE : DEFAULT_TICKRATE);
+		LOGGER.info("Server is now running at {} tickrate.", hibernate ? "minimum" : "default");
 	}
 
 	@Override
 	public void onServerStarted(MinecraftServer server) {
-		if (server.getPlayerCount()==0) {
+		if (server.getPlayerCount() == 0) {
 			LOGGER.info("No player connected yet.");
 			hibernate(server, true);
 		}
 	}
 
 	@Override
-	public void onServerStopped(MinecraftServer server) {
-		LOGGER.info("Server stopped.");
-		hibernate(server, false);
-	}
-
-	@Override
 	public void onPlayDisconnect(ServerGamePacketListenerImpl handler, MinecraftServer server) {
-		if (server.getPlayerCount()==1) {
+		if (server.getPlayerCount() == 1) {
 			LOGGER.info("Last player disconnected.");
 			hibernate(server, true);
 		}
@@ -85,7 +73,7 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 
 	@Override
 	public void onPlayReady(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
-		if (server.getPlayerCount()==0) {
+		if (server.getPlayerCount() == 0) {
 			LOGGER.info("First player joined.");
 			hibernate(server, false);
 		}
