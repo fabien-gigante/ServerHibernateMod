@@ -21,12 +21,12 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
-import net.minecraft.world.TickRateManager;
 
 public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
 	private boolean windowsOS;
 	private static final float DEFAULT_TICKRATE = 20.0f;
+	private static final float HIBERNATE_TICKRATE = 5.0f;
 
 	// Server-side mod entry point
 	@Override
@@ -46,13 +46,12 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 			dispatcher.register(Commands.literal("meta").executes(this::onCommandMeta));
 		});
 	}
-	
+
 	public void hibernate(MinecraftServer server, boolean hibernate) {
 		var tickManager = server.tickRateManager();
-		boolean hibernating = tickManager.tickrate() == TickRateManager.MIN_TICKRATE;
-		if (hibernate == hibernating) return;
-		tickManager.setTickRate(hibernate ? TickRateManager.MIN_TICKRATE : DEFAULT_TICKRATE);
-		LOGGER.info("Server is now running at {} tickrate.", hibernate ? "minimum" : "default");
+		float tickrate = hibernate ? HIBERNATE_TICKRATE : DEFAULT_TICKRATE;
+		tickManager.setTickRate(tickrate);
+		LOGGER.info("Server is now running at {} tps.", tickrate);
 	}
 
 	@Override
