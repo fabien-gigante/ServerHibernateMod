@@ -2,7 +2,7 @@
 # Server Hibernate
 Welcome to the *Server Hibernate* Minecraft mod.
 
-- Automatically slows down the server tick rate (as `/tick rate 5` does) when no player is connected
+- Improve `/tick query` command output when the server is paused due to `pause-when-empty-seconds` server property
 - Adds new-line at the end of RCON messages (to ease remote administration)
 - Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 > [!WARNING]

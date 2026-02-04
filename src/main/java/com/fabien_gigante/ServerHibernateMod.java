@@ -13,20 +13,14 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
-import net.fabricmc.fabric.api.networking.v1.PacketSender;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerGamePacketListenerImpl;
 
-public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionEvents.Join, ServerPlayConnectionEvents.Disconnect,  ServerLifecycleEvents.ServerStarted {
+public class ServerHibernateMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
 	private boolean windowsOS;
-	private static final float DEFAULT_TICKRATE = 20.0f;
-	private static final float HIBERNATE_TICKRATE = 5.0f;
 
 	// Server-side mod entry point
 	@Override
@@ -34,9 +28,6 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		LOGGER.info("ServerHibernateMod - Mod starting...");
 		String os = System.getProperty("os.name").toLowerCase(); 
 		windowsOS = os.contains("win");
-		ServerPlayConnectionEvents.JOIN.register(this);
-		ServerPlayConnectionEvents.DISCONNECT.register(this);	
-		ServerLifecycleEvents.SERVER_STARTED.register(this);
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("shell")
 				.then(Commands.argument("command", StringArgumentType.greedyString())
@@ -45,37 +36,6 @@ public class ServerHibernateMod implements ModInitializer, ServerPlayConnectionE
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("meta").executes(this::onCommandMeta));
 		});
-	}
-
-	public void hibernate(MinecraftServer server, boolean hibernate) {
-		var tickManager = server.tickRateManager();
-		float tickrate = hibernate ? HIBERNATE_TICKRATE : DEFAULT_TICKRATE;
-		tickManager.setTickRate(tickrate);
-		LOGGER.info("Server is now running at {} tps.", tickrate);
-	}
-
-	@Override
-	public void onServerStarted(MinecraftServer server) {
-		if (server.getPlayerCount() == 0) {
-			LOGGER.info("No player connected yet.");
-			hibernate(server, true);
-		}
-	}
-
-	@Override
-	public void onPlayDisconnect(ServerGamePacketListenerImpl handler, MinecraftServer server) {
-		if (server.getPlayerCount() == 1) {
-			LOGGER.info("Last player disconnected.");
-			hibernate(server, true);
-		}
-	}
-
-	@Override
-	public void onPlayReady(ServerGamePacketListenerImpl handler, PacketSender sender, MinecraftServer server) {
-		if (server.getPlayerCount() == 0) {
-			LOGGER.info("First player joined.");
-			hibernate(server, false);
-		}
 	}
 
 	private int onCommandShell(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
