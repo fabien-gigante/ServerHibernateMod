@@ -1,3 +1,4 @@
 {
-  "commands.tick.status.paused": "Le serveur est en pause car aucun joueur n'est connecté."
+  "commands.tick.status.paused": "Le serveur est en pause car aucun joueur n'est connecté.",
+  "event.minecraft.raid.wave": "Vague %d/%d en approche"
 }
