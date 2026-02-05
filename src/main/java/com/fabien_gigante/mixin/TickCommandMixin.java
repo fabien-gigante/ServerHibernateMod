@@ -9,11 +9,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.commands.TickCommand;
 
+import com.fabien_gigante.PauseableWhenEmpty;
+
 @Mixin(TickCommand.class)
 public class TickCommandMixin {
     @Inject(method = "tickQuery", at = @At("HEAD"))
     private static void onTickQuery(CommandSourceStack source, CallbackInfoReturnable<Integer> cir) {
-        if (source.getServer() instanceof MinecraftServerAccessor server && server.isPausedWhenEmpty())
+        if (source.getServer() instanceof PauseableWhenEmpty server && server.isPausedWhenEmpty())
             source.sendSuccess(() -> Component.translatable("commands.tick.status.paused"), false);
     }
 }
