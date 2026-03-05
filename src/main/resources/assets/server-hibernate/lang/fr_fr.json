@@ -1,4 +1,5 @@
 {
   "commands.tick.status.paused": "Le serveur est en pause car aucun joueur n'est connecté.",
-  "event.minecraft.raid.wave": "Vague %d/%d en approche"
+  "event.minecraft.raid.wave": "Vague %d/%d en approche",
+  "commands.data.count": "Nombre d'entités comptées : "
 }

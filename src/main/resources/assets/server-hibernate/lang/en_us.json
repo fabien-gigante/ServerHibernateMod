@@ -1,4 +1,5 @@
 {
   "commands.tick.status.paused": "Paused because no players are online.",
-  "event.minecraft.raid.wave": "Wave %d/%d incoming"
+  "event.minecraft.raid.wave": "Wave %d/%d incoming",
+  "commands.data.count": "Number of entities counted: "
 }

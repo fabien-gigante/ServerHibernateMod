@@ -17,6 +17,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.commands.arguments.EntityArgument;
 
 public class ServerHibernateMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger("server-hibernate");
@@ -35,6 +36,11 @@ public class ServerHibernateMod implements ModInitializer {
 		});
 		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
 			dispatcher.register(Commands.literal("meta").executes(this::onCommandMeta));
+		});
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(Commands.literal("data").then(Commands.literal("count")
+				.then(Commands.argument("entities", EntityArgument.entities())
+				.executes(this::onCommandDataCount))));
 		});
 	}
 
@@ -62,8 +68,16 @@ public class ServerHibernateMod implements ModInitializer {
 	private int onCommandMeta(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
 		var source = context.getSource(); 
 		MinecraftServer server = source.getServer();
-		Component meta = Component.empty().append(server.getMotd()).append(" ("+server.getServerVersion()+")");
-		source.sendSystemMessage(meta);
+		Component message = Component.empty().append(server.getMotd()).append(" ("+server.getServerVersion()+")");
+		source.sendSystemMessage(message);
+		return 1;
+	}
+
+	private int onCommandDataCount(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		CommandSourceStack source = context.getSource();
+		var entities = EntityArgument.getEntities(context, "entities");
+		Component message = Component.translatable("commands.data.count").append(String.valueOf(entities.size()));
+		source.sendSystemMessage(message);
 		return 1;
 	}
 }
