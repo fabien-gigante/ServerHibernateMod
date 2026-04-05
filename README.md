@@ -5,8 +5,8 @@ Welcome to the *Server Hibernate* Minecraft mod.
 - Improves `/tick query` command output when the server is paused due to `pause-when-empty-seconds` server property
 - Displays wave number in the boss bar during raids
 - Adds new-line at the end of RCON messages (to ease remote administration)
-- Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 - Adds command `date count <entities selector>` to number the entities count matching a given selector
+- Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 > [!WARNING]
 > Use at your own risk
 
