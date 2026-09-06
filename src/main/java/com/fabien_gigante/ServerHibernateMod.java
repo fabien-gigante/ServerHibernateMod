@@ -17,6 +17,9 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTraderSpawner;
+import net.minecraft.world.level.storage.SavedDataStorage;
 import net.minecraft.commands.arguments.EntityArgument;
 
 public class ServerHibernateMod implements ModInitializer {
@@ -42,10 +45,13 @@ public class ServerHibernateMod implements ModInitializer {
 				.then(Commands.argument("entities", EntityArgument.entities())
 				.executes(this::onCommandDataCount))));
 		});
+		CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) -> {
+			dispatcher.register(Commands.literal("spawnTrader").executes(this::onCommandSpawnTrader));
+		});		
 	}
 
 	private int onCommandShell(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-		var source = context.getSource();
+		CommandSourceStack source = context.getSource();
 		String command = StringArgumentType.getString(context, "command");
 		int rc = -1;
 		LOGGER.info("Running shell command : {}", command);
@@ -66,7 +72,7 @@ public class ServerHibernateMod implements ModInitializer {
 	}
 
 	private int onCommandMeta(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-		var source = context.getSource(); 
+		CommandSourceStack source = context.getSource(); 
 		MinecraftServer server = source.getServer();
 		Component message = Component.empty().append(server.getMotd()).append(" ("+server.getServerVersion()+")");
 		source.sendSystemMessage(message);
@@ -77,6 +83,14 @@ public class ServerHibernateMod implements ModInitializer {
 		CommandSourceStack source = context.getSource();
 		var entities = EntityArgument.getEntities(context, "entities");
 		Component message = Component.translatable("commands.data.count").append(String.valueOf(entities.size()));
+		source.sendSystemMessage(message);
+		return 1;
+	}
+
+	private int onCommandSpawnTrader(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+		CommandSourceStack source = context.getSource(); 
+		boolean success = new WanderingTraderSpawner(null).spawn(source.getLevel());
+		Component message = Component.translatable(success ? "commands.spawn_trader" : "commands.spawn_trader.failed");
 		source.sendSystemMessage(message);
 		return 1;
 	}

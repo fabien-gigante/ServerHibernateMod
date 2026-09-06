@@ -6,6 +6,7 @@ Welcome to the *Server Hibernate* Minecraft mod.
 - Displays wave number in the boss bar during raids
 - Adds new-line at the end of RCON messages (to ease remote administration)
 - Adds command `data count <entities selector>` to number the entities count matching a given selector
+- Adds command `spawnTrader` that attempts to spawn a Wandering Trader (as the vanilla spawner would)
 - Adds command `shell <command>` to execute an OS-level command on the server (using `cmd` on windows, `sh` otherwise) from Minecraft or RCON clients
 > [!WARNING]
 > Use at your own risk

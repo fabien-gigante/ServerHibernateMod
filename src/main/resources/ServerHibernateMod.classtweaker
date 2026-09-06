@@ -1,0 +1,2 @@
+classTweaker  v1  official
+accessible method net/minecraft/world/entity/npc/wanderingtrader/WanderingTraderSpawner spawn (Lnet/minecraft/server/level/ServerLevel;)Z

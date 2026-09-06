@@ -1,5 +1,7 @@
 {
   "commands.tick.status.paused": "Le serveur est en pause car aucun joueur n'est connecté.",
   "event.minecraft.raid.wave": "Vague %d/%d en approche",
-  "commands.data.count": "Nombre d'entités comptées : "
+  "commands.data.count": "Nombre d'entités comptées : ",
+  "commands.spawn_trader": "Un marchand itinérant a été généré.",
+  "commands.spawn_trader.failed": "Échec de la génération d'un marchand itinérant."
 }

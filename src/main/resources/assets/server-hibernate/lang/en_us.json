@@ -1,5 +1,7 @@
 {
   "commands.tick.status.paused": "Paused because no players are online.",
   "event.minecraft.raid.wave": "Wave %d/%d incoming",
-  "commands.data.count": "Number of entities counted: "
+  "commands.data.count": "Number of entities counted: ",
+  "commands.spawn_trader": "Spawned a wandering trader.",
+  "commands.spawn_trader.failed": "Failed to spawn a wandering trader."
 }

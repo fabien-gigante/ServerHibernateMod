@@ -20,6 +20,7 @@
 	"mixins": [
 		"ServerHibernateMod.mixins.json"
 	],
+	"accessWidener": "ServerHibernateMod.classtweaker",
 	"depends": {
 		"minecraft": ">=26.1",
 		"java": ">=25",
